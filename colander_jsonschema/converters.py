@@ -43,8 +43,16 @@ class Converter(object):
         return converted
 
 
+class BooleanConverter(Converter):
+    type = 'boolean'
+
+
 class IntegerConverter(Converter):
     type = 'integer'
+
+
+class NumberConverter(Converter):
+    type = 'number'
 
 
 class StringConverter(Converter):
@@ -78,6 +86,8 @@ class MappingConverter(Converter):
 class ConversionDispatcher(object):
 
     converters = {
+        colander.Boolean: BooleanConverter,
+        colander.Float: NumberConverter,
         colander.Integer: IntegerConverter,
         colander.Mapping: MappingConverter,
         colander.String: StringConverter,
