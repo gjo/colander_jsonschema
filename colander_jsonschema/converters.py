@@ -11,11 +11,18 @@ class ConversionError(Exception):
     pass
 
 
+class NoSuchConverter(ConversionError):
+    pass
+
+
 class Converter(object):
 
     type = ''
 
     def __init__(self, dispatcher):
+        """
+        :type dispatcher: ConversionDispatcher
+        """
         self.dispatcher = dispatcher
 
     def __call__(self, schema_node, converted=None):
@@ -93,7 +100,7 @@ class ConversionDispatcher(object):
             schema_type = type(schema_type)
         converter_class = self.converters.get(schema_type)
         if converter_class is None:
-            raise ConversionError
+            raise NoSuchConverter
         converter = converter_class(self)
         converted = converter(schema_node)
         return converted
@@ -109,6 +116,11 @@ def finalize_conversion(converted):
 
 
 def convert(schema_node, converters=None):
+    """
+    :type schema_node: colander.SchemaNode
+    :type converters: dict
+    :rtype: dict
+    """
     dispatcher = ConversionDispatcher(converters)
     converted = dispatcher(schema_node)
     converted = finalize_conversion(converted)
