@@ -36,7 +36,7 @@ class Converter(object):
         converted['type'] = self.type
         if not schema_node.required:
             converted['type'] = [converted['type'], 'null']
-        if schema_node.title:
+        if schema_node.raw_title is not colander._marker:
             converted['title'] = schema_node.title
         if schema_node.description:
             converted['description'] = schema_node.description

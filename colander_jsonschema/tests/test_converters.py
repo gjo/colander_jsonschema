@@ -24,12 +24,12 @@ class ConvertTestCase(unittest.TestCase):
             'type': 'array',
             'items': {
                 'type': 'object',
-                'title': 'Var M',
                 'properties': {
-                    'var_b': {'type': 'boolean', 'title': 'Var B'},
-                    'var_f': {'type': 'number', 'title': 'Var F'},
-                    'var_i': {'type': 'integer', 'title': 'Var I'},
-                    'var_s': {'type': 'string', 'title': 'Var S'}},
+                    'var_b': {'type': 'boolean'},
+                    'var_f': {'type': 'number'},
+                    'var_i': {'type': 'integer'},
+                    'var_s': {'type': 'string'}
+                },
                 'required': ['var_b', 'var_f', 'var_i', 'var_s'],
             }
         })
