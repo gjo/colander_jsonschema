@@ -59,7 +59,7 @@ class StringConverter(Converter):
     type = 'string'
 
 
-class MappingConverter(Converter):
+class ObjectConverter(Converter):
 
     type = 'object'
 
@@ -69,8 +69,8 @@ class MappingConverter(Converter):
         :type converted: dict
         :rtype: dict
         """
-        converted = super(MappingConverter, self).__call__(schema_node,
-                                                           converted)
+        converted = super(ObjectConverter, self).__call__(schema_node,
+                                                          converted)
         properties = {}
         required = []
         for sub_node in schema_node.children:
@@ -83,13 +83,30 @@ class MappingConverter(Converter):
         return converted
 
 
+class ArrayConverter(Converter):
+
+    type = 'array'
+
+    def __call__(self, schema_node, converted=None):
+        """
+        :type schema_node: colander.SchemaNode
+        :type converted: dict
+        :rtype: dict
+        """
+        converted = super(ArrayConverter, self).__call__(schema_node,
+                                                         converted)
+        converted['items'] = self.dispatcher(schema_node.children[0])
+        return converted
+
+
 class ConversionDispatcher(object):
 
     converters = {
+        colander.Sequence: ArrayConverter,
         colander.Boolean: BooleanConverter,
         colander.Float: NumberConverter,
         colander.Integer: IntegerConverter,
-        colander.Mapping: MappingConverter,
+        colander.Mapping: ObjectConverter,
         colander.String: StringConverter,
     }
 
