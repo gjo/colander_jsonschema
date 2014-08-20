@@ -81,7 +81,9 @@ class NumberConverter(Converter):
                 if validator.min is not None:
                     converted['minimum'] = validator.min
             elif isinstance(validator, colander.OneOf):
-                converted['enum'] = validator.choices
+                converted['enum'] = list(validator.choices)
+                if not schema_node.required:
+                    converted['enum'].append(None)
         return converted
 
 
@@ -114,7 +116,9 @@ class StringConverter(Converter):
             elif isinstance(validator, colander.Regex):
                 converted['pattern'] = validator.match_object.pattern
             elif isinstance(validator, colander.OneOf):
-                converted['enum'] = validator.choices
+                converted['enum'] = list(validator.choices)
+                if not schema_node.required:
+                    converted['enum'].append(None)
         return converted
 
 
