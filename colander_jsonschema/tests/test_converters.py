@@ -28,7 +28,7 @@ class ConvertTestCase(unittest.TestCase):
                     'var_b': {'type': 'boolean'},
                     'var_f': {'type': 'number'},
                     'var_i': {'type': 'integer', 'default': 0},
-                    'var_s': {'type': 'string'}
+                    'var_s': {'type': 'string', 'minLength': 1}
                 },
                 'required': ['var_b', 'var_f', 'var_i', 'var_s'],
             }
