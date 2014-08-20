@@ -11,7 +11,7 @@ class ConvertTestCase(unittest.TestCase):
         class CheckMapping(colander.MappingSchema):
             var_b = colander.SchemaNode(colander.Bool())
             var_f = colander.SchemaNode(colander.Float())
-            var_i = colander.SchemaNode(colander.Int())
+            var_i = colander.SchemaNode(colander.Int(), default=0)
             var_s = colander.SchemaNode(colander.Str())
 
         class CheckSequence(colander.SequenceSchema):
@@ -27,7 +27,7 @@ class ConvertTestCase(unittest.TestCase):
                 'properties': {
                     'var_b': {'type': 'boolean'},
                     'var_f': {'type': 'number'},
-                    'var_i': {'type': 'integer'},
+                    'var_i': {'type': 'integer', 'default': 0},
                     'var_s': {'type': 'string'}
                 },
                 'required': ['var_b', 'var_f', 'var_i', 'var_s'],

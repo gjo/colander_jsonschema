@@ -40,6 +40,8 @@ class Converter(object):
             converted['title'] = schema_node.title
         if schema_node.description:
             converted['description'] = schema_node.description
+        if schema_node.default is not colander.null:
+            converted['default'] = schema_node.default
         return converted
 
 
