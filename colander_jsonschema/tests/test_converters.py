@@ -9,10 +9,10 @@ class ConvertTestCase(unittest.TestCase):
     def test_mapping(self):
 
         class CheckMapping(colander.MappingSchema):
-            var_b = colander.SchemaNode(colander.Bool)
-            var_f = colander.SchemaNode(colander.Float)
-            var_i = colander.SchemaNode(colander.Int)
-            var_s = colander.SchemaNode(colander.Str)
+            var_b = colander.SchemaNode(colander.Bool())
+            var_f = colander.SchemaNode(colander.Float())
+            var_i = colander.SchemaNode(colander.Int())
+            var_s = colander.SchemaNode(colander.Str())
 
         class CheckSequence(colander.SequenceSchema):
             var_m = CheckMapping()

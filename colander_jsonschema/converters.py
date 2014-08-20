@@ -123,8 +123,7 @@ class ConversionDispatcher(object):
         :rtype: dict
         """
         schema_type = schema_node.typ
-        if isinstance(schema_type, colander.SchemaType):
-            schema_type = type(schema_type)
+        schema_type = type(schema_type)
         converter_class = self.converters.get(schema_type)
         if converter_class is None:
             raise NoSuchConverter
