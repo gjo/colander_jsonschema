@@ -58,8 +58,36 @@ class Converter(object):
         return converted
 
 
+class BaseStringConverter(Converter):
+
+    type = 'string'
+    format = None
+
+    def __call__(self, schema_node, converted=None):
+        """
+        :type schema_node: colander.SchemaNode
+        :type converted: dict
+        :rtype: dict
+        """
+        converted = super(BaseStringConverter, self).__call__(schema_node,
+                                                              converted)
+        if schema_node.required:
+            converted['minLength'] = 1
+        if self.format is not None:
+            converted['format'] = self.format
+        return converted
+
+
 class BooleanConverter(Converter):
     type = 'boolean'
+
+
+class DateConverter(BaseStringConverter):
+    format = 'date'
+
+
+class DateTimeConverter(BaseStringConverter):
+    format = 'date-time'
 
 
 class NumberConverter(Converter):
@@ -91,9 +119,7 @@ class IntegerConverter(NumberConverter):
     type = 'integer'
 
 
-class StringConverter(Converter):
-
-    type = 'string'
+class StringConverter(BaseStringConverter):
 
     def __call__(self, schema_node, converted=None):
         """
@@ -103,8 +129,6 @@ class StringConverter(Converter):
         """
         converted = super(StringConverter, self).__call__(schema_node,
                                                           converted)
-        if schema_node.required:
-            converted['minLength'] = 1
         for validator in iter_validators(schema_node):
             if isinstance(validator, colander.Length):
                 if validator.max is not None:
@@ -120,6 +144,10 @@ class StringConverter(Converter):
                 if not schema_node.required:
                     converted['enum'].append(None)
         return converted
+
+
+class TimeConverter(BaseStringConverter):
+    format = 'time'
 
 
 class ObjectConverter(Converter):
@@ -171,12 +199,15 @@ class ArrayConverter(Converter):
 class ConversionDispatcher(object):
 
     converters = {
-        colander.Sequence: ArrayConverter,
         colander.Boolean: BooleanConverter,
+        colander.Date: DateConverter,
+        colander.DateTime: DateTimeConverter,
         colander.Float: NumberConverter,
         colander.Integer: IntegerConverter,
         colander.Mapping: ObjectConverter,
+        colander.Sequence: ArrayConverter,
         colander.String: StringConverter,
+        colander.Time: TimeConverter,
     }
 
     def __init__(self, converters=None):
