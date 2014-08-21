@@ -27,7 +27,7 @@ class NoSuchConverter(ConversionError):
     pass
 
 
-class Converter(object):
+class TypeConverter(object):
 
     type = ''
 
@@ -57,7 +57,7 @@ class Converter(object):
         return converted
 
 
-class BaseStringConverter(Converter):
+class BaseStringTypeConverter(TypeConverter):
 
     type = 'string'
     format = None
@@ -68,8 +68,8 @@ class BaseStringConverter(Converter):
         :type converted: dict
         :rtype: dict
         """
-        converted = super(BaseStringConverter, self).__call__(schema_node,
-                                                              converted)
+        converted = super(BaseStringTypeConverter,
+                          self).__call__(schema_node, converted)
         if schema_node.required:
             converted['minLength'] = 1
         if self.format is not None:
@@ -77,19 +77,19 @@ class BaseStringConverter(Converter):
         return converted
 
 
-class BooleanConverter(Converter):
+class BooleanTypeConverter(TypeConverter):
     type = 'boolean'
 
 
-class DateConverter(BaseStringConverter):
+class DateTypeConverter(BaseStringTypeConverter):
     format = 'date'
 
 
-class DateTimeConverter(BaseStringConverter):
+class DateTimeTypeConverter(BaseStringTypeConverter):
     format = 'date-time'
 
 
-class NumberConverter(Converter):
+class NumberTypeConverter(TypeConverter):
 
     type = 'number'
 
@@ -99,8 +99,8 @@ class NumberConverter(Converter):
         :type converted: dict
         :rtype: dict
         """
-        converted = super(NumberConverter, self).__call__(schema_node,
-                                                          converted)
+        converted = super(NumberTypeConverter,
+                          self).__call__(schema_node, converted)
         for validator in iter_validators(schema_node):
             if isinstance(validator, colander.Range):
                 if validator.max is not None:
@@ -114,11 +114,11 @@ class NumberConverter(Converter):
         return converted
 
 
-class IntegerConverter(NumberConverter):
+class IntegerTypeConverter(NumberTypeConverter):
     type = 'integer'
 
 
-class StringConverter(BaseStringConverter):
+class StringTypeConverter(BaseStringTypeConverter):
 
     def __call__(self, schema_node, converted=None):
         """
@@ -126,8 +126,8 @@ class StringConverter(BaseStringConverter):
         :type converted: dict
         :rtype: dict
         """
-        converted = super(StringConverter, self).__call__(schema_node,
-                                                          converted)
+        converted = super(StringTypeConverter,
+                          self).__call__(schema_node, converted)
         for validator in iter_validators(schema_node):
             if isinstance(validator, colander.Length):
                 if validator.max is not None:
@@ -147,11 +147,11 @@ class StringConverter(BaseStringConverter):
         return converted
 
 
-class TimeConverter(BaseStringConverter):
+class TimeTypeConverter(BaseStringTypeConverter):
     format = 'time'
 
 
-class ObjectConverter(Converter):
+class ObjectTypeConverter(TypeConverter):
 
     type = 'object'
 
@@ -161,8 +161,8 @@ class ObjectConverter(Converter):
         :type converted: dict
         :rtype: dict
         """
-        converted = super(ObjectConverter, self).__call__(schema_node,
-                                                          converted)
+        converted = super(ObjectTypeConverter,
+                          self).__call__(schema_node, converted)
         properties = {}
         required = []
         for sub_node in schema_node.children:
@@ -175,7 +175,7 @@ class ObjectConverter(Converter):
         return converted
 
 
-class ArrayConverter(Converter):
+class ArrayTypeConverter(TypeConverter):
 
     type = 'array'
 
@@ -185,8 +185,8 @@ class ArrayConverter(Converter):
         :type converted: dict
         :rtype: dict
         """
-        converted = super(ArrayConverter, self).__call__(schema_node,
-                                                         converted)
+        converted = super(ArrayTypeConverter,
+                          self).__call__(schema_node, converted)
         converted['items'] = self.dispatcher(schema_node.children[0])
         for validator in iter_validators(schema_node):
             if isinstance(validator, colander.Length):
@@ -200,15 +200,15 @@ class ArrayConverter(Converter):
 class ConversionDispatcher(object):
 
     converters = {
-        colander.Boolean: BooleanConverter,
-        colander.Date: DateConverter,
-        colander.DateTime: DateTimeConverter,
-        colander.Float: NumberConverter,
-        colander.Integer: IntegerConverter,
-        colander.Mapping: ObjectConverter,
-        colander.Sequence: ArrayConverter,
-        colander.String: StringConverter,
-        colander.Time: TimeConverter,
+        colander.Boolean: BooleanTypeConverter,
+        colander.Date: DateTypeConverter,
+        colander.DateTime: DateTimeTypeConverter,
+        colander.Float: NumberTypeConverter,
+        colander.Integer: IntegerTypeConverter,
+        colander.Mapping: ObjectTypeConverter,
+        colander.Sequence: ArrayTypeConverter,
+        colander.String: StringTypeConverter,
+        colander.Time: TimeTypeConverter,
     }
 
     def __init__(self, converters=None):
