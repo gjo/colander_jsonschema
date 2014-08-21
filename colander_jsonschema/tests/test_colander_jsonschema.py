@@ -20,7 +20,7 @@ class ConvertTestCase(unittest.TestCase):
         class CheckSequence(colander.SequenceSchema):
             var_m = CheckMapping()
 
-        from ..converters import convert
+        from .. import convert
         ret = convert(CheckSequence())
         self.assertDictEqual(ret, {
             '$schema': 'http://json-schema.org/draft-04/schema#',
