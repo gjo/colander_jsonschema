@@ -135,6 +135,8 @@ class StringConverter(BaseStringConverter):
                     converted['maxLength'] = validator.max
                 if validator.min is not None:
                     converted['minLength'] = validator.min
+            elif validator is colander.url:
+                converted['format'] = 'uri'
             elif isinstance(validator, colander.Email):
                 converted['format'] = 'email'
             elif isinstance(validator, colander.Regex):
