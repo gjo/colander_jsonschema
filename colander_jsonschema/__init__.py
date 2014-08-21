@@ -1,22 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import colander
+import colander.interfaces
 
 
 __version__ = '0.1dev'
-
-
-def iter_validators(schema_node):
-    """
-    :type schema_node: colander.SchemaNode
-    :rtype: iter
-    """
-    if schema_node.validator is not None:
-        if isinstance(schema_node.validator, colander.All):
-            for validator in schema_node.validator.validators:
-                yield validator
-        else:
-            yield schema_node.validator
 
 
 class ConversionError(Exception):
@@ -27,9 +15,124 @@ class NoSuchConverter(ConversionError):
     pass
 
 
+def convert_length_validator_factory(max_key, min_key):
+    """
+    :type max_key: str
+    :type min_key: str
+    """
+    def validator_converter(schema_node, validator):
+        """
+        :type schema_node: colander.SchemaNode
+        :type validator: colander.interfaces.Validator
+        :rtype: dict
+        """
+        converted = None
+        if isinstance(validator, colander.Length):
+            converted = {}
+            if validator.max is not None:
+                converted[max_key] = validator.max
+            if validator.min is not None:
+                converted[min_key] = validator.min
+        return converted
+    return validator_converter
+
+
+def convert_oneof_validator_factory(null_values=(None,)):
+    """
+    :type null_values: iter
+    """
+    def validator_converter(schema_node, validator):
+        """
+        :type schema_node: colander.SchemaNode
+        :type validator: colander.interfaces.Validator
+        :rtype: dict
+        """
+        converted = None
+        if isinstance(validator, colander.OneOf):
+            converted = {}
+            converted['enum'] = list(validator.choices)
+            if not schema_node.required:
+                converted['enum'].extend(list(null_values))
+        return converted
+
+    return validator_converter
+
+
+def convert_range_validator(schema_node, validator):
+    """
+    :type schema_node: colander.SchemaNode
+    :type validator: colander.interfaces.Validator
+    :rtype: dict
+    """
+    converted = None
+    if isinstance(validator, colander.Range):
+        converted = {}
+        if validator.max is not None:
+            converted['maximum'] = validator.max
+        if validator.min is not None:
+            converted['minimum'] = validator.min
+    return converted
+
+
+def convert_regex_validator(schema_node, validator):
+    """
+    :type schema_node: colander.SchemaNode
+    :type validator: colander.interfaces.Validator
+    :rtype: dict
+    """
+    converted = None
+    if isinstance(validator, colander.Regex):
+        converted = {}
+        if validator is colander.url:
+            converted['format'] = 'uri'
+        elif isinstance(validator, colander.Email):
+            converted['format'] = 'email'
+        else:
+            converted['pattern'] = validator.match_object.pattern
+    return converted
+
+
+class ValidatorConversionDispatcher(object):
+
+    def __init__(self, *converters):
+        self.converters = converters
+
+    def __call__(self, schema_node, validator=None):
+        """
+        :type schema_node: colander.SchemaNode
+        :type validator: colander.interfaces.Validator
+        :rtype: dict
+        """
+        if validator is None:
+            validator = schema_node.validator
+        converted = {}
+        if validator is not None:
+            for converter in (self.convert_all_validator,) + self.converters:
+                ret = converter(schema_node, validator)
+                if ret is not None:
+                    converted = ret
+                    break
+        return converted
+
+    def convert_all_validator(self, schema_node, validator):
+        """
+        :type schema_node: colander.SchemaNode
+        :type validator: colander.interfaces.Validator
+        :rtype: dict
+        """
+        converted = None
+        if isinstance(validator, colander.All):
+            converted = {}
+            for v in validator.validators:
+                ret = self(schema_node, validator)
+                converted.update(ret)
+        return converted
+
+
 class TypeConverter(object):
 
     type = ''
+    convert_validator = lambda self, schema_node: {}
 
     def __init__(self, dispatcher):
         """
@@ -37,14 +140,12 @@ class TypeConverter(object):
         """
         self.dispatcher = dispatcher
 
-    def __call__(self, schema_node, converted=None):
+    def convert_type(self, schema_node, converted):
         """
         :type schema_node: colander.SchemaNode
         :type converted: dict
         :rtype: dict
         """
-        if converted is None:
-            converted = {}
         converted['type'] = self.type
         if not schema_node.required:
             converted['type'] = [converted['type'], 'null']
@@ -56,20 +157,32 @@ class TypeConverter(object):
             converted['default'] = schema_node.default
         return converted
 
-
-class BaseStringTypeConverter(TypeConverter):
-
-    type = 'string'
-    format = None
-
     def __call__(self, schema_node, converted=None):
         """
         :type schema_node: colander.SchemaNode
         :type converted: dict
         :rtype: dict
         """
+        if converted is None:
+            converted = {}
+        converted = self.convert_type(schema_node, converted)
+        converted.update(self.convert_validator(schema_node))
+        return converted
+
+
+class BaseStringTypeConverter(TypeConverter):
+
+    type = 'string'
+    format = None
+
+    def convert_type(self, schema_node, converted):
+        """
+        :type schema_node: colander.SchemaNode
+        :type converted: dict
+        :rtype: dict
+        """
         converted = super(BaseStringTypeConverter,
-                          self).__call__(schema_node, converted)
+                          self).convert_type(schema_node, converted)
         if schema_node.required:
             converted['minLength'] = 1
         if self.format is not None:
@@ -90,28 +203,11 @@ class DateTimeTypeConverter(BaseStringTypeConverter):
 
 
 class NumberTypeConverter(TypeConverter):
-
     type = 'number'
-
-    def __call__(self, schema_node, converted=None):
-        """
-        :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
-        """
-        converted = super(NumberTypeConverter,
-                          self).__call__(schema_node, converted)
-        for validator in iter_validators(schema_node):
-            if isinstance(validator, colander.Range):
-                if validator.max is not None:
-                    converted['maximum'] = validator.max
-                if validator.min is not None:
-                    converted['minimum'] = validator.min
-            elif isinstance(validator, colander.OneOf):
-                converted['enum'] = list(validator.choices)
-                if not schema_node.required:
-                    converted['enum'].append(None)
-        return converted
+    convert_validator = ValidatorConversionDispatcher(
+        convert_range_validator,
+        convert_oneof_validator_factory(),
+    )
 
 
 class IntegerTypeConverter(NumberTypeConverter):
@@ -119,32 +215,11 @@ class IntegerTypeConverter(NumberTypeConverter):
 
 
 class StringTypeConverter(BaseStringTypeConverter):
-
-    def __call__(self, schema_node, converted=None):
-        """
-        :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
-        """
-        converted = super(StringTypeConverter,
-                          self).__call__(schema_node, converted)
-        for validator in iter_validators(schema_node):
-            if isinstance(validator, colander.Length):
-                if validator.max is not None:
-                    converted['maxLength'] = validator.max
-                if validator.min is not None:
-                    converted['minLength'] = validator.min
-            elif validator is colander.url:
-                converted['format'] = 'uri'
-            elif isinstance(validator, colander.Email):
-                converted['format'] = 'email'
-            elif isinstance(validator, colander.Regex):
-                converted['pattern'] = validator.match_object.pattern
-            elif isinstance(validator, colander.OneOf):
-                converted['enum'] = list(validator.choices)
-                if not schema_node.required:
-                    converted['enum'].append(None)
-        return converted
+    convert_validator = ValidatorConversionDispatcher(
+        convert_length_validator_factory('maxLength', 'minLength'),
+        convert_regex_validator,
+        convert_oneof_validator_factory(('', None)),
+    )
 
 
 class TimeTypeConverter(BaseStringTypeConverter):
@@ -155,14 +230,14 @@ class ObjectTypeConverter(TypeConverter):
 
     type = 'object'
 
-    def __call__(self, schema_node, converted=None):
+    def convert_type(self, schema_node, converted):
         """
         :type schema_node: colander.SchemaNode
         :type converted: dict
         :rtype: dict
         """
         converted = super(ObjectTypeConverter,
-                          self).__call__(schema_node, converted)
+                          self).convert_type(schema_node, converted)
         properties = {}
         required = []
         for sub_node in schema_node.children:
@@ -178,22 +253,19 @@ class ObjectTypeConverter(TypeConverter):
 class ArrayTypeConverter(TypeConverter):
 
     type = 'array'
+    convert_validator = ValidatorConversionDispatcher(
+        convert_length_validator_factory('maxItems', 'minItems'),
+    )
 
-    def __call__(self, schema_node, converted=None):
+    def convert_type(self, schema_node, converted):
         """
         :type schema_node: colander.SchemaNode
         :type converted: dict
         :rtype: dict
         """
         converted = super(ArrayTypeConverter,
-                          self).__call__(schema_node, converted)
+                          self).convert_type(schema_node, converted)
         converted['items'] = self.dispatcher(schema_node.children[0])
-        for validator in iter_validators(schema_node):
-            if isinstance(validator, colander.Length):
-                if validator.max is not None:
-                    converted['maxItems'] = validator.max
-                if validator.min is not None:
-                    converted['minItems'] = validator.min
         return converted
 
 

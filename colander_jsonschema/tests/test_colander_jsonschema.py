@@ -14,7 +14,8 @@ class ConvertTestCase(unittest.TestCase):
             var_dt = colander.SchemaNode(colander.DateTime())
             var_f = colander.SchemaNode(colander.Float())
             var_i = colander.SchemaNode(colander.Int(), default=0)
-            var_s = colander.SchemaNode(colander.Str())
+            var_s = colander.SchemaNode(colander.Str(),
+                                        validator=colander.Length(max=100))
             var_t = colander.SchemaNode(colander.Time())
 
         class CheckSequence(colander.SequenceSchema):
@@ -35,7 +36,8 @@ class ConvertTestCase(unittest.TestCase):
                                'format': 'date-time'},
                     'var_f': {'type': 'number'},
                     'var_i': {'type': 'integer', 'default': 0},
-                    'var_s': {'type': 'string', 'minLength': 1},
+                    'var_s': {'type': 'string', 'minLength': 1,
+                              'maxLength': 100},
                     'var_t': {'type': 'string', 'minLength': 1,
                               'format': 'time'},
                 },
