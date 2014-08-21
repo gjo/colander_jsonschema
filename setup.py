@@ -26,7 +26,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=('colander', 'jsonschema'),
+    install_requires=['colander'],
     test_suite = 'colander_jsonschema.tests',
     classifiers=[
         'Environment :: Console',
