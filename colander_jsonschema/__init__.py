@@ -33,7 +33,7 @@ class TypeConverter(object):
 
     def __init__(self, dispatcher):
         """
-        :type dispatcher: ConversionDispatcher
+        :type dispatcher: TypeConversionDispatcher
         """
         self.dispatcher = dispatcher
 
@@ -197,7 +197,7 @@ class ArrayTypeConverter(TypeConverter):
         return converted
 
 
-class ConversionDispatcher(object):
+class TypeConversionDispatcher(object):
 
     converters = {
         colander.Boolean: BooleanTypeConverter,
@@ -248,7 +248,7 @@ def convert(schema_node, converters=None):
     :type converters: dict
     :rtype: dict
     """
-    dispatcher = ConversionDispatcher(converters)
+    dispatcher = TypeConversionDispatcher(converters)
     converted = dispatcher(schema_node)
     converted = finalize_conversion(converted)
     return converted
