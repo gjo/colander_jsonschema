@@ -124,7 +124,7 @@ class ValidatorConversionDispatcher(object):
         if isinstance(validator, colander.All):
             converted = {}
             for v in validator.validators:
-                ret = self(schema_node, validator)
+                ret = self(schema_node, v)
                 converted.update(ret)
         return converted
 
