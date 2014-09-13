@@ -149,7 +149,8 @@ class TypeConverter(object):
         converted['type'] = self.type
         if not schema_node.required:
             converted['type'] = [converted['type'], 'null']
-        converted['title'] = schema_node.title
+        if schema_node.title:
+            converted['title'] = schema_node.title
         if schema_node.description:
             converted['description'] = schema_node.description
         if schema_node.default is not colander.null:
