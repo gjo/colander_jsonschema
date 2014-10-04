@@ -83,7 +83,7 @@ def convert_regex_validator(schema_node, validator):
     converted = None
     if isinstance(validator, colander.Regex):
         converted = {}
-        if validator is colander.url:
+        if hasattr(colander, 'url') and validator is colander.url:
             converted['format'] = 'uri'
         elif isinstance(validator, colander.Email):
             converted['format'] = 'email'
