@@ -1,7 +1,10 @@
 Change History
 ==============
 
+0.2 - Unreleased
+----------------
+- python3 support
+
 0.1 - 2014-10-04
 ----------------
-
 - Initial release.
