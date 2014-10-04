@@ -154,7 +154,139 @@ class StringNodeTestCase(unittest.TestCase):
             'enum': ['one', 'two', '', None],
         })
 
-    dummy = None
+    def test_title(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.String(), title='TITLEtitleTITLE')
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'string',
+            'minLength': 1,
+            'title': 'TITLEtitleTITLE',
+        })
+
+    def test_description(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.String(),
+                                   description='descriptionDESCRIPTION')
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'string',
+            'minLength': 1,
+            'description': 'descriptionDESCRIPTION',
+        })
+
+
+class IntegerNodeTestCase(unittest.TestCase):
+
+    def test_minimal(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer())
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'integer',
+        })
+
+    def test_null(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(), missing=None)
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': ['integer', 'null'],
+        })
+
+    def test_default(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(), default=1)
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'integer',
+            'default': 1,
+        })
+
+    def test_default_null(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(), missing=None,
+                                   default=None)
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': ['integer', 'null'],
+            'default': None,
+        })
+
+    def test_enum(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(),
+                                   validator=colander.OneOf([1, 2, 3, 4]))
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'integer',
+            'enum': [1, 2, 3, 4],
+        })
+
+    def test_enum_null(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(), missing=None,
+                                   default=None,
+                                   validator=colander.OneOf([1, 2, 3, 4]))
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': ['integer', 'null'],
+            'default': None,
+            'enum': [1, 2, 3, 4, None],
+        })
+
+    def test_range_both(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(),
+                                   validator=colander.Range(111, 555))
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'integer',
+            'minimum': 111,
+            'maximum': 555,
+        })
+
+    def test_range_min(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(),
+                                   validator=colander.Range(222))
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'integer',
+            'minimum': 222,
+        })
+
+    def test_range_max(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.Integer(),
+                                   validator=colander.Range(max=444))
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'integer',
+            'maximum': 444,
+        })
 
 
 class ConvertTestCase(unittest.TestCase):
