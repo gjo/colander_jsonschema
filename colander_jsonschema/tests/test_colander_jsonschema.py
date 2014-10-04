@@ -289,6 +289,32 @@ class IntegerNodeTestCase(unittest.TestCase):
         })
 
 
+class DateTimeNodeTestCase(unittest.TestCase):
+
+    def test_minimal(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.DateTime())
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'string',
+            'format': 'date-time',
+            'minLength': 1,
+        })
+
+    def test_null(self):
+        import colander
+        from .. import convert
+        node = colander.SchemaNode(colander.DateTime(), missing=None)
+        ret = convert(node)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': ['string', 'null'],
+            'format': 'date-time',
+        })
+
+
 class ConvertTestCase(unittest.TestCase):
 
     def tes_mapping(self):
