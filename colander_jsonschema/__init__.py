@@ -4,7 +4,7 @@ import colander
 import colander.interfaces
 
 
-__version__ = '0.1dev'
+__version__ = '0.1'
 
 
 class ConversionError(Exception):
