@@ -315,45 +315,102 @@ class DateTimeNodeTestCase(unittest.TestCase):
         })
 
 
-class ConvertTestCase(unittest.TestCase):
+class MappingSchemaTestCase(unittest.TestCase):
 
-    def tes_mapping(self):
+    def test(self):
         import colander
-
-        class CheckMapping(colander.MappingSchema):
-            var_b = colander.SchemaNode(colander.Bool())
-            var_d = colander.SchemaNode(colander.Date())
-            var_dt = colander.SchemaNode(colander.DateTime())
-            var_f = colander.SchemaNode(colander.Float())
-            var_i = colander.SchemaNode(colander.Int(), default=0)
-            var_s = colander.SchemaNode(colander.Str(),
-                                        validator=colander.Length(max=100))
-            var_t = colander.SchemaNode(colander.Time())
-
-        class CheckSequence(colander.SequenceSchema):
-            var_m = CheckMapping()
-
         from .. import convert
-        ret = convert(CheckSequence())
+
+        class BaseMapping(colander.MappingSchema):
+            title = 'unnumbered object'
+            description = 'covered description'
+            title_ = colander.SchemaNode(
+                colander.String(),
+                validator=colander.Length(max=255),
+                name='title',
+                title='name of object',
+                description='one line string',
+            )
+            description_ = colander.SchemaNode(
+                colander.String(),
+                validator=colander.Length(max=4096),
+                default='',
+                missing='',
+                name='description',
+                title='description of object',
+                description='multi line string'
+            )
+            can_publish = colander.SchemaNode(
+                colander.Boolean(),
+                default=False,
+                name='canPublish',
+                title='can publish object',
+                description='object is shown in web if true',
+            )
+
+        class ExtendedMapping(BaseMapping):
+            title = 'numbered object'
+            description = 'the instanced object'
+            id = colander.SchemaNode(
+                colander.Integer(),
+                validator=colander.Range(min=1),
+                title='identity for mapping',
+                description='1-origin 64bit signed integer'
+            )
+            created_at = colander.SchemaNode(
+                colander.DateTime(),
+                name='createdAt',
+                title='timestamp of object creation',
+                description='UTC time',
+            )
+
+        schema = ExtendedMapping()
+        ret = convert(schema)
+        self.maxDiff = None
         self.assertDictEqual(ret, {
             '$schema': 'http://json-schema.org/draft-04/schema#',
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'var_b': {'type': 'boolean'},
-                    'var_d': {'type': 'string', 'minLength': 1,
-                              'format': 'date'},
-                    'var_dt': {'type': 'string', 'minLength': 1,
-                               'format': 'date-time'},
-                    'var_f': {'type': 'number'},
-                    'var_i': {'type': 'integer', 'default': 0},
-                    'var_s': {'type': 'string', 'minLength': 1,
-                              'maxLength': 100},
-                    'var_t': {'type': 'string', 'minLength': 1,
-                              'format': 'time'},
+            'type': 'object',
+            # 'title': 'numbered object',  # colander-0.9.9 hides title
+            # 'description': 'the instanced object',  # ??? FIXME
+            'required': [
+                'title',
+                'canPublish',
+                'id',
+                'createdAt',
+            ],
+            'properties': {
+                'title': {
+                    'type': 'string',
+                    'maxLength': 255,
+                    'minLength': 1,
+                    'title': 'name of object',
+                    'description': 'one line string',
                 },
-                'required': ['var_b', 'var_d', 'var_dt', 'var_f', 'var_i',
-                             'var_s', 'var_t'],
+                'description': {
+                    'type': ['string', 'null'],
+                    'maxLength': 4096,
+                    'default': '',
+                    'title': 'description of object',
+                    'description': 'multi line string',
+                },
+                'canPublish': {
+                    'type': 'boolean',
+                    'default': False,
+                    'title': 'can publish object',
+                    'description': 'object is shown in web if true',
+                },
+                'id': {
+                    'type': 'integer',
+                    'minimum': 1,
+                    'title': 'identity for mapping',
+                    'description': '1-origin 64bit signed integer',
+                },
+                'createdAt': {
+                    'type': 'string',
+                    'format': 'date-time',
+                    'minLength': 1,
+                    'title': 'timestamp of object creation',
+                    'description': 'UTC time',
+                },
             }
         })
