@@ -315,6 +315,44 @@ class DateTimeNodeTestCase(unittest.TestCase):
         })
 
 
+class SequenceSchemaTestCase(unittest.TestCase):
+
+    def test(self):
+        import colander
+        from .. import convert
+
+        class BaseMapping(colander.MappingSchema):
+            name = colander.SchemaNode(colander.String())
+            number = colander.SchemaNode(colander.Integer())
+
+        class BaseMappings(colander.SequenceSchema):
+            base_mapping = BaseMapping()
+
+        schema = BaseMappings()
+        ret = convert(schema)
+        self.maxDiff = None
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'name': {
+                        'type': 'string',
+                        'minLength': 1,
+                        'title': 'Name',
+                    },
+                    'number': {
+                        'type': 'integer',
+                        'title': 'Number',
+                    }
+                },
+                'required': ['name', 'number'],
+                'title': 'Base Mapping',
+            },
+        })
+
+
 class MappingSchemaTestCase(unittest.TestCase):
 
     def test(self):
