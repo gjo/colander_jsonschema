@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
 import unittest
 
 
@@ -106,7 +107,7 @@ class StringNodeTestCase(unittest.TestCase):
         import colander
         from .. import convert
         node = colander.SchemaNode(colander.String(),
-                                   validator=colander.Regex(ur'TESTtestTEST'))
+                                   validator=colander.Regex(r'TESTtestTEST'))
         ret = convert(node)
         self.assertDictEqual(ret, {
             '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -408,8 +409,8 @@ class MappingSchemaTestCase(unittest.TestCase):
         self.assertDictEqual(ret, {
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
-            # 'title': 'numbered object',  # colander-0.9.9 hides title
-            # 'description': 'the instanced object',  # ??? FIXME
+            # 'title': 'numbered object',  # colander-1.0b1 hides this
+            'description': 'the instanced object',  # colander-0.9.9 hide this
             'required': [
                 'title',
                 'canPublish',
