@@ -40,5 +40,5 @@ TODO: create useful interfaces
 Planned Features
 ================
 
-* python3 support
+* auto-discover schemas
 * setuptools integration
