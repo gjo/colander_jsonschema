@@ -16,7 +16,7 @@ except:
 
 setup(
     name='colander_jsonschema',
-    version='0.2',
+    version='0.3dev',
     description='JSON-Schema converter for colander',
     long_description=long_description,
     author='OCHIAI, Gouji',
