@@ -316,6 +316,27 @@ class DateTimeNodeTestCase(unittest.TestCase):
         })
 
 
+class DecimalNodeTestCase(unittest.TestCase):
+
+    def test_string(self):
+        import colander
+        from .. import (
+            DecimalStringTypeConverter,
+            TypeConversionDispatcher,
+            convert,
+        )
+        t = TypeConversionDispatcher.converters.copy()
+        t[colander.Decimal] = DecimalStringTypeConverter
+        node = colander.SchemaNode(colander.Decimal())
+        ret = convert(node, t)
+        self.assertDictEqual(ret, {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'string',
+            'minLength': 1,
+            'pattern': r'^[-+]?[0-9]+(\.[0-9]*)?$',
+        })
+
+
 class SequenceSchemaTestCase(unittest.TestCase):
 
     def test(self):

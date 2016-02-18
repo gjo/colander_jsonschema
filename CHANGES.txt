@@ -3,6 +3,7 @@ Change History
 
 0.3 - Unreleased
 ----------------
+- (experimental) convert decimal to string
 - auto discovery?
 - refactor dispatchers?
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import decimal
 import colander
 import colander.interfaces
 
@@ -202,6 +203,24 @@ class DateTimeTypeConverter(BaseStringTypeConverter):
     format = 'date-time'
 
 
+class DecimalStringTypeConverter(BaseStringTypeConverter):
+    def convert_validator(self, schema_node):
+        """
+        :type schema_node: colander.SchemaNode
+        :rtype: dict
+        """
+        converted = {
+            'pattern': r'^[-+]?[0-9]+(\.[0-9]*)?$'
+        }
+        if isinstance(schema_node, colander.Decimal):
+            if isinstance(schema_node.quant, decimal.Decimal):
+                (_, _, exponent) = schema_node.quant.as_tuple()
+                if exponent < 0:
+                    converted['pattern'] = \
+                        r'^[-+]?[0-9]+(\.[0-9]{,' + str(abs(exponent)) + '})?$'
+        return converted
+
+
 class NumberTypeConverter(TypeConverter):
     type = 'number'
     convert_validator = ValidatorConversionDispatcher(
@@ -275,6 +294,7 @@ class TypeConversionDispatcher(object):
         colander.Boolean: BooleanTypeConverter,
         colander.Date: DateTypeConverter,
         colander.DateTime: DateTimeTypeConverter,
+        # colander.Decimal: DecimalStringTypeConverter,
         colander.Float: NumberTypeConverter,
         colander.Integer: IntegerTypeConverter,
         colander.Mapping: ObjectTypeConverter,
