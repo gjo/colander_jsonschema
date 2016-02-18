@@ -409,8 +409,8 @@ class MappingSchemaTestCase(unittest.TestCase):
         self.assertDictEqual(ret, {
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
-            # 'title': 'numbered object',  # colander-1.0b1 hides this
-            'description': 'the instanced object',  # colander-0.9.9 hide this
+            'title': 'numbered object',
+            'description': 'the instanced object',
             'required': [
                 'title',
                 'canPublish',
