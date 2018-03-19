@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
 import decimal
 import colander
 import colander.interfaces
@@ -133,13 +134,15 @@ class ValidatorConversionDispatcher(object):
 class TypeConverter(object):
 
     type = ''
-    convert_validator = lambda self, schema_node: {}
 
     def __init__(self, dispatcher):
         """
         :type dispatcher: TypeConversionDispatcher
         """
         self.dispatcher = dispatcher
+
+    def convert_validator(self, schema_node):
+        return {}
 
     def convert_type(self, schema_node, converted):
         """
