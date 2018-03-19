@@ -8,7 +8,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_minimal(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String())
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -19,7 +19,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_can_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(), missing=None)
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -29,7 +29,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_has_default(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(), default='DEFAULT')
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -41,7 +41,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_can_null_has_default(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(), missing='DEFAULT',
                                    default='DEFAULT')
         ret = convert(node)
@@ -53,7 +53,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_length_both(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.Length(11, 33))
         ret = convert(node)
@@ -66,7 +66,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_length_min_and_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.Length(22),
                                    missing=None)
@@ -79,7 +79,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_length_max(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.Length(max=44),
                                    missing=None)
@@ -92,7 +92,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_length_max_and_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.Length(max=55))
         ret = convert(node)
@@ -105,7 +105,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_regex(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.Regex(r'TESTtestTEST'))
         ret = convert(node)
@@ -118,7 +118,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_regex_email(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.Email())
         ret = convert(node)
@@ -131,7 +131,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_oneof(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.OneOf(["one", "two"]))
         ret = convert(node)
@@ -144,7 +144,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_validate_oneof_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    validator=colander.OneOf(["one", "two"]),
                                    missing=None)
@@ -157,7 +157,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_title(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(), title='TITLEtitleTITLE')
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -169,7 +169,7 @@ class StringNodeTestCase(unittest.TestCase):
 
     def test_description(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.String(),
                                    description='descriptionDESCRIPTION')
         ret = convert(node)
@@ -185,7 +185,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_minimal(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer())
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -195,7 +195,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(), missing=None)
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -205,7 +205,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_default(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(), default=1)
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -216,7 +216,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_default_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(), missing=None,
                                    default=None)
         ret = convert(node)
@@ -228,7 +228,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_enum(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(),
                                    validator=colander.OneOf([1, 2, 3, 4]))
         ret = convert(node)
@@ -240,7 +240,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_enum_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(), missing=None,
                                    default=None,
                                    validator=colander.OneOf([1, 2, 3, 4]))
@@ -254,7 +254,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_range_both(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(),
                                    validator=colander.Range(111, 555))
         ret = convert(node)
@@ -267,7 +267,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_range_min(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(),
                                    validator=colander.Range(222))
         ret = convert(node)
@@ -279,7 +279,7 @@ class IntegerNodeTestCase(unittest.TestCase):
 
     def test_range_max(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.Integer(),
                                    validator=colander.Range(max=444))
         ret = convert(node)
@@ -294,7 +294,7 @@ class DateTimeNodeTestCase(unittest.TestCase):
 
     def test_minimal(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.DateTime())
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -306,7 +306,7 @@ class DateTimeNodeTestCase(unittest.TestCase):
 
     def test_null(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
         node = colander.SchemaNode(colander.DateTime(), missing=None)
         ret = convert(node)
         self.assertDictEqual(ret, {
@@ -320,7 +320,7 @@ class DecimalNodeTestCase(unittest.TestCase):
 
     def test_string(self):
         import colander
-        from .. import (
+        from colander_jsonschema import (
             DecimalStringTypeConverter,
             TypeConversionDispatcher,
             convert,
@@ -341,7 +341,7 @@ class SequenceSchemaTestCase(unittest.TestCase):
 
     def test(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
 
         class BaseMapping(colander.MappingSchema):
             name = colander.SchemaNode(colander.String())
@@ -379,7 +379,7 @@ class MappingSchemaTestCase(unittest.TestCase):
 
     def test(self):
         import colander
-        from .. import convert
+        from colander_jsonschema import convert
 
         class BaseMapping(colander.MappingSchema):
             title = 'unnumbered object'

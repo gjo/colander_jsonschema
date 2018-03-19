@@ -23,11 +23,11 @@ setup(
     author_email='gjo.ext@gmail.com',
     url='https://github.com/gjo/colander_jsonschema',
     license='BSD',
-    packages=find_packages(),
+    packages=find_packages(exclude=['examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
     install_requires=['colander>=1.0'],
-    test_suite='colander_jsonschema.tests',
+    test_suite='tests',
     classifiers=[
         'Environment :: Console',
         'Framework :: Pylons',
