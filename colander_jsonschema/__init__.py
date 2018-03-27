@@ -6,7 +6,7 @@ from . import draft4, draft4_stringdecimal
 from .draft4 import convert
 
 
-__version__ = '0.3.dev1'
+__version__ = '0.3.dev2'
 __all__ = (
     ConversionError,
     NoSuchConverter,

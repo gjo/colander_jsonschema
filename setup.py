@@ -20,7 +20,7 @@ tests_require = [
 
 setup(
     name='colander_jsonschema',
-    version='0.3.dev1',
+    version='0.3.dev2',
     description=description,
     long_description=long_description,
     author='OCHIAI, Gouji',
