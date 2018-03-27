@@ -5,19 +5,23 @@ import os
 from setuptools import setup, find_packages
 
 
+description = 'JSON-Schema converter for colander'
 here = os.path.abspath(os.path.dirname(__file__))
 try:
     readme = open(os.path.join(here, 'README.rst')).read()
     changes = open(os.path.join(here, 'CHANGES.txt')).read()
     long_description = '\n\n'.join([readme, changes])
 except:
-    long_description = 'JSON-Schema converter for colander'
+    long_description = description
 
+
+tests_require = [
+]
 
 setup(
     name='colander_jsonschema',
     version='0.3.dev1',
-    description='JSON-Schema converter for colander',
+    description=description,
     long_description=long_description,
     author='OCHIAI, Gouji',
     author_email='gjo.ext@gmail.com',
@@ -27,6 +31,10 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=['colander>=1.0'],
+    tests_require=tests_require,
+    extras_require={
+        'testing': tests_require,
+    },
     test_suite='tests',
     classifiers=[
         'Environment :: Console',
