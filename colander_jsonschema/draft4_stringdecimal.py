@@ -20,8 +20,11 @@ class DecimalStringTypeConverter(BaseStringTypeConverter):
             if isinstance(typ.quant, decimal.Decimal):
                 (_, _, exponent) = typ.quant.as_tuple()
                 if exponent < 0:
-                    converted['pattern'] = \
-                        r'^[-+]?[0-9]+(\.[0-9]{,' + str(abs(exponent)) + r'})?$'
+                    converted['pattern'] = r''.join([
+                        r'^[-+]?[0-9]+(\.[0-9]{,',
+                        str(abs(exponent)),
+                        r'})?$'
+                    ])
         return converted
 
 
