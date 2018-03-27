@@ -280,6 +280,7 @@ class TypeConversionDispatcher(object):
         :type converters: dict
         """
         if converters is not None:
+            self.converters = self.converters.copy()
             self.converters.update(converters)
 
     def __call__(self, schema_node):

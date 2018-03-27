@@ -15,12 +15,13 @@ class DecimalStringTypeConverter(BaseStringTypeConverter):
         converted = {
             'pattern': r'^[-+]?[0-9]+(\.[0-9]*)?$'
         }
-        if isinstance(schema_node, colander.Decimal):
-            if isinstance(schema_node.quant, decimal.Decimal):
-                (_, _, exponent) = schema_node.quant.as_tuple()
+        typ = schema_node.typ
+        if isinstance(typ, colander.Decimal):
+            if isinstance(typ.quant, decimal.Decimal):
+                (_, _, exponent) = typ.quant.as_tuple()
                 if exponent < 0:
                     converted['pattern'] = \
-                        r'^[-+]?[0-9]+(\.[0-9]{,' + str(abs(exponent)) + '})?$'
+                        r'^[-+]?[0-9]+(\.[0-9]{,' + str(abs(exponent)) + r'})?$'
         return converted
 
 
