@@ -5,5 +5,5 @@ class ConversionError(Exception):
     pass
 
 
-class NoSuchConverter(ConversionError):
+class NoSuchConverter(ConversionError, KeyError):
     pass

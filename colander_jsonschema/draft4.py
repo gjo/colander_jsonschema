@@ -2,318 +2,157 @@
 
 from __future__ import unicode_literals
 import colander
-from .exceptions import NoSuchConverter
+from . import base
 
 
-def convert_length_validator_factory(max_key, min_key):
-    """
-    :type max_key: str
-    :type min_key: str
-    """
-    def validator_converter(schema_node, validator):
+class Draft4OneOfValidatorConverter(object):
+
+    def __init__(self, null_values=(None,)):
+        """
+        :type null_values: iter
+        """
+        self.null_values = null_values
+
+    def __call__(self, schema_node, validator):
         """
         :type schema_node: colander.SchemaNode
         :type validator: colander.interfaces.Validator
-        :rtype: dict
+        :rtype: dict[str, object]
         """
-        converted = None
-        if isinstance(validator, colander.Length):
-            converted = {}
-            if validator.max is not None:
-                converted[max_key] = validator.max
-            if validator.min is not None:
-                converted[min_key] = validator.min
-        return converted
-    return validator_converter
-
-
-def convert_oneof_validator_factory(null_values=(None,)):
-    """
-    :type null_values: iter
-    """
-    def validator_converter(schema_node, validator):
-        """
-        :type schema_node: colander.SchemaNode
-        :type validator: colander.interfaces.Validator
-        :rtype: dict
-        """
-        converted = None
         if isinstance(validator, colander.OneOf):
-            converted = {}
-            converted['enum'] = list(validator.choices)
+            converted = {'enum': list(validator.choices)}
             if not schema_node.required:
-                converted['enum'].extend(list(null_values))
-        return converted
-
-    return validator_converter
+                converted['enum'].extend(list(self.null_values))
+            return converted
 
 
-def convert_range_validator(schema_node, validator):
-    """
-    :type schema_node: colander.SchemaNode
-    :type validator: colander.interfaces.Validator
-    :rtype: dict
-    """
-    converted = None
-    if isinstance(validator, colander.Range):
-        converted = {}
-        if validator.max is not None:
-            converted['maximum'] = validator.max
-        if validator.min is not None:
-            converted['minimum'] = validator.min
-    return converted
-
-
-def convert_regex_validator(schema_node, validator):
-    """
-    :type schema_node: colander.SchemaNode
-    :type validator: colander.interfaces.Validator
-    :rtype: dict
-    """
-    converted = None
-    if isinstance(validator, colander.Regex):
-        converted = {}
-        if hasattr(colander, 'url') and validator is colander.url:
-            converted['format'] = 'uri'
-        elif isinstance(validator, colander.Email):
-            converted['format'] = 'email'
-        else:
-            converted['pattern'] = validator.match_object.pattern
-    return converted
-
-
-class ValidatorConversionDispatcher(object):
-
-    def __init__(self, *converters):
-        self.converters = converters
-
-    def __call__(self, schema_node, validator=None):
+class Draft4BaseTypeConverter(base.BaseTypeConverter):
+    def convert_type(self, schema_node, cache):
         """
         :type schema_node: colander.SchemaNode
-        :type validator: colander.interfaces.Validator
-        :rtype: dict
+        :type cache: dict[str, object]
+        :rtype: dict[str, object]
         """
-        if validator is None:
-            validator = schema_node.validator
-        converted = {}
-        if validator is not None:
-            for converter in (self.convert_all_validator,) + self.converters:
-                ret = converter(schema_node, validator)
-                if ret is not None:
-                    converted = ret
-                    break
-        return converted
-
-    def convert_all_validator(self, schema_node, validator):
-        """
-        :type schema_node: colander.SchemaNode
-        :type validator: colander.interfaces.Validator
-        :rtype: dict
-        """
-        converted = None
-        if isinstance(validator, colander.All):
-            converted = {}
-            for v in validator.validators:
-                ret = self(schema_node, v)
-                converted.update(ret)
-        return converted
-
-
-class TypeConverter(object):
-
-    type = ''
-
-    def __init__(self, dispatcher):
-        """
-        :type dispatcher: TypeConversionDispatcher
-        """
-        self.dispatcher = dispatcher
-
-    def convert_validator(self, schema_node):
-        return {}
-
-    def convert_type(self, schema_node, converted):
-        """
-        :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
-        """
-        converted['type'] = self.type
+        converted = super(Draft4BaseTypeConverter,
+                          self).convert_type(schema_node, cache)
         if not schema_node.required:
             converted['type'] = [converted['type'], 'null']
         if schema_node.title:
             converted['title'] = schema_node.title
-        if schema_node.description:
-            converted['description'] = schema_node.description
-        if schema_node.default is not colander.null:
-            converted['default'] = schema_node.default
-        return converted
-
-    def __call__(self, schema_node, converted=None):
-        """
-        :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
-        """
-        if converted is None:
-            converted = {}
-        converted = self.convert_type(schema_node, converted)
-        converted.update(self.convert_validator(schema_node))
         return converted
 
 
-class BaseStringTypeConverter(TypeConverter):
+class Draft4BaseStringTypeConverter(
+    Draft4BaseTypeConverter,
+    base.BaseStringTypeConverter,
+):
 
-    type = 'string'
-    format = None
+    validator_converters = [
+        base.convert_string_length,
+        base.convert_regex,
+        Draft4OneOfValidatorConverter(('', None)),
+    ]
 
-    def convert_type(self, schema_node, converted):
+    def convert_type(self, schema_node, cache):
         """
         :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
+        :type cache: dict[str, object]
+        :rtype: dict[str, object]
         """
-        converted = super(BaseStringTypeConverter,
-                          self).convert_type(schema_node, converted)
+        converted = super(Draft4BaseStringTypeConverter,
+                          self).convert_type(schema_node, cache)
         if schema_node.required:
             converted['minLength'] = 1
-        if self.format is not None:
-            converted['format'] = self.format
         return converted
 
 
-class BooleanTypeConverter(TypeConverter):
-    type = 'boolean'
+class Draft4StringTypeConverter(
+    Draft4BaseStringTypeConverter,
+    base.StringTypeConverter,
+):
+    pass
 
 
-class DateTypeConverter(BaseStringTypeConverter):
-    format = 'date'
+class Draft4DateTypeConverter(
+    Draft4BaseStringTypeConverter,
+    base.DateTypeConverter,
+):
+    pass
 
 
-class DateTimeTypeConverter(BaseStringTypeConverter):
-    format = 'date-time'
+class Draft4DateTimeTypeConverter(
+    Draft4BaseStringTypeConverter,
+    base.DateTimeTypeConverter,
+):
+    pass
 
 
-class NumberTypeConverter(TypeConverter):
-    type = 'number'
-    convert_validator = ValidatorConversionDispatcher(
-        convert_range_validator,
-        convert_oneof_validator_factory(),
-    )
+class Draft4TimeTypeConverter(
+    Draft4BaseStringTypeConverter,
+    base.TimeTypeConverter,
+):
+    pass
 
 
-class IntegerTypeConverter(NumberTypeConverter):
-    type = 'integer'
+class Draft4BooleanTypeConverter(
+    Draft4BaseTypeConverter,
+    base.BooleanTypeConverter,
+):
+    pass
 
 
-class StringTypeConverter(BaseStringTypeConverter):
-    convert_validator = ValidatorConversionDispatcher(
-        convert_length_validator_factory('maxLength', 'minLength'),
-        convert_regex_validator,
-        convert_oneof_validator_factory(('', None)),
-    )
+class Draft4NumberTypeConverter(
+    Draft4BaseTypeConverter,
+    base.NumberTypeConverter,
+):
+    validator_converters = [
+        base.convert_range,
+        Draft4OneOfValidatorConverter(),
+    ]
 
 
-class TimeTypeConverter(BaseStringTypeConverter):
-    format = 'time'
+class Draft4IntegerTypeConverter(
+    Draft4NumberTypeConverter,
+    base.IntegerTypeAdapter,
+):
+    pass
 
 
-class ObjectTypeConverter(TypeConverter):
-
-    type = 'object'
-
-    def convert_type(self, schema_node, converted):
-        """
-        :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
-        """
-        converted = super(ObjectTypeConverter,
-                          self).convert_type(schema_node, converted)
-        properties = {}
-        required = []
-        for sub_node in schema_node.children:
-            properties[sub_node.name] = self.dispatcher(sub_node)
-            if sub_node.required:
-                required.append(sub_node.name)
-        converted['properties'] = properties
-        if len(required) > 0:
-            converted['required'] = required
-        return converted
+class Draft4ObjectTypeConverter(
+    Draft4BaseTypeConverter,
+    base.ObjectTypeConverter,
+):
+    pass
 
 
-class ArrayTypeConverter(TypeConverter):
-
-    type = 'array'
-    convert_validator = ValidatorConversionDispatcher(
-        convert_length_validator_factory('maxItems', 'minItems'),
-    )
-
-    def convert_type(self, schema_node, converted):
-        """
-        :type schema_node: colander.SchemaNode
-        :type converted: dict
-        :rtype: dict
-        """
-        converted = super(ArrayTypeConverter,
-                          self).convert_type(schema_node, converted)
-        converted['items'] = self.dispatcher(schema_node.children[0])
-        return converted
+class Draft4ArrayTypeConverter(
+    Draft4BaseTypeConverter,
+    base.ArrayTypeConverter,
+):
+    pass
 
 
-class TypeConversionDispatcher(object):
-
+class Draft4TypeDispatcher(base.TypeDispatcher):
+    schema_id = 'http://json-schema.org/draft-04/schema#'
     converters = {
-        colander.Boolean: BooleanTypeConverter,
-        colander.Date: DateTypeConverter,
-        colander.DateTime: DateTimeTypeConverter,
-        colander.Float: NumberTypeConverter,
-        colander.Integer: IntegerTypeConverter,
-        colander.Mapping: ObjectTypeConverter,
-        colander.Sequence: ArrayTypeConverter,
-        colander.String: StringTypeConverter,
-        colander.Time: TimeTypeConverter,
+        colander.Boolean: Draft4BooleanTypeConverter(),
+        colander.Date: Draft4DateTypeConverter(),
+        colander.DateTime: Draft4DateTimeTypeConverter(),
+        colander.Float: Draft4NumberTypeConverter(),
+        colander.Integer: Draft4IntegerTypeConverter(),
+        colander.Mapping: Draft4ObjectTypeConverter(),
+        colander.Sequence: Draft4ArrayTypeConverter(),
+        colander.String: Draft4StringTypeConverter(),
+        colander.Time: Draft4TimeTypeConverter(),
     }
 
-    def __init__(self, converters=None):
-        """
-        :type converters: dict
-        """
-        if converters is not None:
-            self.converters = self.converters.copy()
-            self.converters.update(converters)
-
-    def __call__(self, schema_node):
+    def finalize(self, schema_node, cache, converted):
         """
         :type schema_node: colander.SchemaNode
-        :rtype: dict
+        :type cache: dict[str, object]
+        :type converted: dict[str, object]
         """
-        schema_type = schema_node.typ
-        schema_type = type(schema_type)
-        converter_class = self.converters.get(schema_type)
-        if converter_class is None:
-            raise NoSuchConverter
-        converter = converter_class(self)
-        converted = converter(schema_node)
-        return converted
-
-
-def finalize_conversion(converted):
-    """
-    :type converted: dict
-    :rtype: dict
-    """
-    converted['$schema'] = 'http://json-schema.org/draft-04/schema#'
-    return converted
-
-
-def convert(schema_node, converters=None):
-    """
-    :type schema_node: colander.SchemaNode
-    :type converters: dict
-    :rtype: dict
-    """
-    dispatcher = TypeConversionDispatcher(converters)
-    converted = dispatcher(schema_node)
-    converted = finalize_conversion(converted)
-    return converted
+        super(Draft4TypeDispatcher,
+              self).finalize(schema_node, cache, converted)
+        if converted:
+            converted['$schema'] = self.schema_id

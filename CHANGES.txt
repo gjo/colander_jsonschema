@@ -5,6 +5,7 @@ Change History
 ----------------
 - flavor support.
 - convert decimal to string
+- (experimental) swagger2 support
 - auto discovery?
 - refactor dispatchers?
 
