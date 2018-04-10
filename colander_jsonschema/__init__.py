@@ -10,7 +10,7 @@ from .swagger2 import Swagger2TypeDispatcher
 convert = Draft4TypeDispatcher()
 
 
-__version__ = '0.3.dev2'
+__version__ = '0.3.dev3'
 __all__ = (
     ConversionError,
     Draft4DecimalStringTypeDispatcher,

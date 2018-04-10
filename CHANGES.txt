@@ -4,10 +4,8 @@ Change History
 0.3 - Unreleased
 ----------------
 - flavor support.
-- convert decimal to string
+- (experimental) convert decimal to string
 - (experimental) swagger2 support
-- auto discovery?
-- refactor dispatchers?
 
 0.2 - 2014-10-06
 ----------------
